@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-esgkiwibird-dev-cb2be-authRole",
+      "UnauthRoleArn": "arn:aws:iam::699041963208:role/amplify-esgkiwibird-dev-cb2be-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::699041963208:role/amplify-esgkiwibird-dev-cb2be-authRole",
+      "Region": "ap-southeast-1",
+      "DeploymentBucketName": "amplify-esgkiwibird-dev-cb2be-deployment",
+      "UnauthRoleName": "amplify-esgkiwibird-dev-cb2be-unauthRole",
+      "StackName": "amplify-esgkiwibird-dev-cb2be",
+      "StackId": "arn:aws:cloudformation:ap-southeast-1:699041963208:stack/amplify-esgkiwibird-dev-cb2be/3defc1e0-93d7-11f0-af04-06f979aea9a3",
+      "AmplifyAppId": "d1ee5mpvme6d26"
+    }
+  }
+}
