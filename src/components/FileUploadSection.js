@@ -17,12 +17,7 @@ const FileUploadSection = ({ onStartAnalysis }) => {
   const [uploading, setUploading] = useState(false);
   const [selectedFramework, setSelectedFramework] = useState(null);
   const navigate = useNavigate();
-  const {
-    updateReport,
-    setReportLoading,
-    setReportError,
-    loading: reportLoading,
-  } = useReport();
+  const { updateReport, setReportError } = useReport();
 
   // Initialize mock uploaded files in global scope for demo
   useEffect(() => {
@@ -56,8 +51,10 @@ const FileUploadSection = ({ onStartAnalysis }) => {
       return;
     }
 
-    setReportLoading(true);
+    // Always redirect to analysis screen first
+    onStartAnalysis(selectedFramework);
 
+    // Then call the API in the background
     try {
       console.log("Starting report generation...");
       console.log("Selected framework:", selectedFramework);
@@ -97,16 +94,17 @@ const FileUploadSection = ({ onStartAnalysis }) => {
           workflowData: result.fullResponse,
         });
 
-        // Success message and navigate to report page
-        message.success("Report generated successfully!");
-        navigate("/report");
+        console.log("Report data stored successfully");
       } else {
-        throw new Error(result.workflowError || "Workflow failed");
+        console.error(
+          "Workflow failed:",
+          result.workflowError || "Unknown error"
+        );
+        setReportError(result.workflowError || "Workflow failed");
       }
     } catch (error) {
       console.error("Error calling Lambda function:", error);
       setReportError(error.message);
-      message.error("Failed to generate report. Please try again.");
     }
   };
 
@@ -361,22 +359,18 @@ const FileUploadSection = ({ onStartAnalysis }) => {
               size="large"
               icon={<PlayCircleOutlined />}
               onClick={handleGenerateReport}
-              loading={reportLoading}
-              disabled={reportLoading}
               style={{
-                backgroundColor: reportLoading ? "#ccc" : "#5A67BA",
-                borderColor: reportLoading ? "#ccc" : "#5A67BA",
+                backgroundColor: "#5A67BA",
+                borderColor: "#5A67BA",
                 height: 56,
                 fontSize: 18,
                 fontWeight: 600,
                 borderRadius: 8,
                 padding: "0 48px",
-                boxShadow: reportLoading
-                  ? "none"
-                  : "0 4px 12px rgba(90, 103, 186, 0.3)",
+                boxShadow: "0 4px 12px rgba(90, 103, 186, 0.3)",
               }}
             >
-              {reportLoading ? "🔄 Generating Report..." : "🚀 Generate Report"}
+              🚀 Generate Report
             </Button>
           </div>
         )}

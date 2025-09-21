@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { Tabs, Typography, FloatButton, Modal } from "antd";
+import { useState, useEffect } from "react";
+import { Tabs, Typography } from "antd";
 import {
   HighlightOutlined,
   TeamOutlined,
   SafetyCertificateOutlined,
   ExperimentOutlined,
-  MessageOutlined,
 } from "@ant-design/icons";
 import KeyHighlights from "../components/KeyHighlights";
 import Environmental from "../components/Environmental";
@@ -16,7 +15,61 @@ const { Title } = Typography;
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("1");
-  const [chatbotOpen, setChatbotOpen] = useState(false);
+
+  // Initialize Dify chatbot
+  useEffect(() => {
+    // Set up Dify chatbot configuration
+    window.difyChatbotConfig = {
+      token: "fHdXhfYjGoyhj4er",
+      baseUrl: "http://43.217.163.179",
+      inputs: {
+        // You can define the inputs from the Start node here
+        // key is the variable name
+        // e.g.
+        // name: "NAME"
+      },
+      systemVariables: {
+        // user_id: 'YOU CAN DEFINE USER ID HERE',
+        // conversation_id: 'YOU CAN DEFINE CONVERSATION ID HERE, IT MUST BE A VALID UUID',
+      },
+      userVariables: {
+        // avatar_url: 'YOU CAN DEFINE USER AVATAR URL HERE',
+        // name: 'YOU CAN DEFINE USER NAME HERE',
+      },
+    };
+
+    // Add Dify chatbot script
+    const script = document.createElement("script");
+    script.src = "http://43.217.163.179/embed.min.js";
+    script.id = "fHdXhfYjGoyhj4er";
+    script.defer = true;
+    document.body.appendChild(script);
+
+    // Add custom styles
+    const style = document.createElement("style");
+    style.textContent = `
+      #dify-chatbot-bubble-button {
+        background-color: #5A67BA !important;
+      }
+      #dify-chatbot-bubble-window {
+        width: 24rem !important;
+        height: 40rem !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Cleanup function
+    return () => {
+      // Remove script and style on component unmount
+      const existingScript = document.getElementById("fHdXhfYjGoyhj4er");
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+      if (style.parentNode) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
 
   // Get selected framework from global state
   const selectedFramework = window.selectedFramework || "ESG";
@@ -113,45 +166,6 @@ function Dashboard() {
           boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
         }}
       />
-
-      {/* Floating Chatbot Button */}
-      <FloatButton
-        icon={<MessageOutlined />}
-        type="primary"
-        style={{
-          right: 24,
-          bottom: 24,
-          width: 60,
-          height: 60,
-          backgroundColor: "#5A67BA",
-          borderColor: "#5A67BA",
-        }}
-        onClick={() => setChatbotOpen(true)}
-        tooltip="Open AI Assistant"
-      />
-
-      {/* Chatbot Modal */}
-      <Modal
-        title="AI Assistant"
-        open={chatbotOpen}
-        onCancel={() => setChatbotOpen(false)}
-        footer={null}
-        width={800}
-        style={{ top: 20 }}
-        bodyStyle={{ padding: 0, height: "70vh" }}
-      >
-        <iframe
-          src="http://43.216.88.84/chatbot/fHdXhfYjGoyhj4er"
-          style={{
-            width: "100%",
-            height: "100%",
-            minHeight: "500px",
-            border: "none",
-          }}
-          frameBorder="0"
-          allow="microphone"
-        />
-      </Modal>
     </div>
   );
 }
