@@ -23,7 +23,7 @@ function Dashboard() {
     // Set up Dify chatbot configuration
     window.difyChatbotConfig = {
       token: "fHdXhfYjGoyhj4er",
-      baseUrl: "http://43.217.163.179",
+      baseUrl: "https://43.217.163.179",
       inputs: {
         // You can define the inputs from the Start node here
         // key is the variable name
@@ -45,7 +45,7 @@ function Dashboard() {
     if (!existingScript) {
       // Add Dify chatbot script
       const script = document.createElement("script");
-      script.src = "http://43.217.163.179/embed.min.js";
+      script.src = "https://43.217.163.179/embed.min.js";
       script.id = "fHdXhfYjGoyhj4er";
       script.defer = true;
       document.body.appendChild(script);
