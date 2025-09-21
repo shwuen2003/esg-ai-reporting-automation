@@ -6,6 +6,8 @@ import {
 } from "@ant-design/icons";
 import { Button, Upload, Typography, Space, message, Select } from "antd";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useReport } from "../contexts/ReportContext";
 
 const { Dragger } = Upload;
 const { Title, Text } = Typography;
@@ -14,6 +16,13 @@ const FileUploadSection = ({ onStartAnalysis }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [selectedFramework, setSelectedFramework] = useState(null);
+  const navigate = useNavigate();
+  const {
+    updateReport,
+    setReportLoading,
+    setReportError,
+    loading: reportLoading,
+  } = useReport();
 
   // Initialize mock uploaded files in global scope for demo
   useEffect(() => {
@@ -38,6 +47,67 @@ const FileUploadSection = ({ onStartAnalysis }) => {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // Add this new function to call the Lambda function
+  const handleGenerateReport = async () => {
+    if (!selectedFramework) {
+      message.error("Please select a framework first");
+      return;
+    }
+
+    setReportLoading(true);
+
+    try {
+      console.log("Starting report generation...");
+      console.log("Selected framework:", selectedFramework);
+      console.log("Uploaded files:", uploadedFiles);
+
+      // Call your AWS Lambda function
+      const response = await fetch(
+        "https://d74uozipwh.execute-api.ap-southeast-1.amazonaws.com/dev/generateReport",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            framework: selectedFramework,
+            files: uploadedFiles,
+            timestamp: new Date().toISOString(),
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Lambda response:", result);
+
+      // Check if the workflow was successful
+      if (result.success && result.workflowStatus === "succeeded") {
+        // Store the report data in context
+        updateReport({
+          content: result.esgReport, // The markdown content
+          framework: selectedFramework,
+          files: uploadedFiles,
+          timestamp: new Date().toISOString(),
+          workflowData: result.fullResponse,
+        });
+
+        // Success message and navigate to report page
+        message.success("Report generated successfully!");
+        navigate("/report");
+      } else {
+        throw new Error(result.workflowError || "Workflow failed");
+      }
+    } catch (error) {
+      console.error("Error calling Lambda function:", error);
+      setReportError(error.message);
+      message.error("Failed to generate report. Please try again.");
+    }
   };
 
   const uploadProps = {
@@ -290,19 +360,23 @@ const FileUploadSection = ({ onStartAnalysis }) => {
               type="primary"
               size="large"
               icon={<PlayCircleOutlined />}
-              onClick={() => onStartAnalysis(selectedFramework)}
+              onClick={handleGenerateReport}
+              loading={reportLoading}
+              disabled={reportLoading}
               style={{
-                backgroundColor: "#5A67BA",
-                borderColor: "#5A67BA",
+                backgroundColor: reportLoading ? "#ccc" : "#5A67BA",
+                borderColor: reportLoading ? "#ccc" : "#5A67BA",
                 height: 56,
                 fontSize: 18,
                 fontWeight: 600,
                 borderRadius: 8,
                 padding: "0 48px",
-                boxShadow: "0 4px 12px rgba(90, 103, 186, 0.3)",
+                boxShadow: reportLoading
+                  ? "none"
+                  : "0 4px 12px rgba(90, 103, 186, 0.3)",
               }}
             >
-              🚀 Generate Report
+              {reportLoading ? "🔄 Generating Report..." : "🚀 Generate Report"}
             </Button>
           </div>
         )}
