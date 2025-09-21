@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Tabs, Typography } from "antd";
+import { Tabs, Typography, FloatButton, Modal } from "antd";
 import {
   HighlightOutlined,
   TeamOutlined,
   SafetyCertificateOutlined,
   ExperimentOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import KeyHighlights from "../components/KeyHighlights";
 import Environmental from "../components/Environmental";
@@ -15,6 +16,7 @@ const { Title } = Typography;
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("1");
+  const [chatbotOpen, setChatbotOpen] = useState(false);
 
   // Get selected framework from global state
   const selectedFramework = window.selectedFramework || "ESG";
@@ -111,6 +113,45 @@ function Dashboard() {
           boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
         }}
       />
+
+      {/* Floating Chatbot Button */}
+      <FloatButton
+        icon={<MessageOutlined />}
+        type="primary"
+        style={{
+          right: 24,
+          bottom: 24,
+          width: 60,
+          height: 60,
+          backgroundColor: "#5A67BA",
+          borderColor: "#5A67BA",
+        }}
+        onClick={() => setChatbotOpen(true)}
+        tooltip="Open AI Assistant"
+      />
+
+      {/* Chatbot Modal */}
+      <Modal
+        title="AI Assistant"
+        open={chatbotOpen}
+        onCancel={() => setChatbotOpen(false)}
+        footer={null}
+        width={800}
+        style={{ top: 20 }}
+        bodyStyle={{ padding: 0, height: "70vh" }}
+      >
+        <iframe
+          src="http://43.216.88.84/chatbot/fHdXhfYjGoyhj4er"
+          style={{
+            width: "100%",
+            height: "100%",
+            minHeight: "500px",
+            border: "none",
+          }}
+          frameBorder="0"
+          allow="microphone"
+        />
+      </Modal>
     </div>
   );
 }

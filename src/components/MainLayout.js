@@ -7,6 +7,7 @@ import {
   PlusOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  RobotOutlined,
 } from "@ant-design/icons";
 import kiwiLogo from "../assets/kiwi bird.jpg";
 
@@ -25,6 +26,7 @@ const MainLayout = ({ children }) => {
     "/upload": "1",
     "/dashboard": "2",
     "/report": "3",
+    "/chatbot": "4",
   };
 
   // Map menu keys to routes
@@ -32,6 +34,7 @@ const MainLayout = ({ children }) => {
     1: "/upload",
     2: "/dashboard",
     3: "/report",
+    4: "/chatbot",
   };
 
   // Update selected key based on current route
@@ -191,6 +194,22 @@ const MainLayout = ({ children }) => {
                   margin: "4px 8px",
                   borderRadius: "6px",
                   fontWeight: selectedKey === "3" ? 600 : 400,
+                },
+              },
+              {
+                key: "4",
+                icon: <RobotOutlined />,
+                label: "Chatbot",
+                style: {
+                  color:
+                    selectedKey === "4" ? "#5A6ACF" : "rgba(166, 171, 200, 1)",
+                  backgroundColor:
+                    selectedKey === "4"
+                      ? "rgba(112, 127, 221, 0.1)"
+                      : "transparent",
+                  margin: "4px 8px",
+                  borderRadius: "6px",
+                  fontWeight: selectedKey === "4" ? 600 : 400,
                 },
               },
             ]}
