@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Tabs, Typography } from "antd";
+import { useLocation } from "react-router-dom";
 import {
   HighlightOutlined,
   TeamOutlined,
@@ -15,8 +16,9 @@ const { Title } = Typography;
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("1");
+  const location = useLocation();
 
-  // Initialize Dify chatbot
+  // Initialize Dify chatbot only when on dashboard route
   useEffect(() => {
     // Set up Dify chatbot configuration
     window.difyChatbotConfig = {
@@ -38,38 +40,108 @@ function Dashboard() {
       },
     };
 
-    // Add Dify chatbot script
-    const script = document.createElement("script");
-    script.src = "http://43.217.163.179/embed.min.js";
-    script.id = "fHdXhfYjGoyhj4er";
-    script.defer = true;
-    document.body.appendChild(script);
+    // Check if script already exists to avoid duplicates
+    let existingScript = document.getElementById("fHdXhfYjGoyhj4er");
+    if (!existingScript) {
+      // Add Dify chatbot script
+      const script = document.createElement("script");
+      script.src = "http://43.217.163.179/embed.min.js";
+      script.id = "fHdXhfYjGoyhj4er";
+      script.defer = true;
+      document.body.appendChild(script);
+    }
 
-    // Add custom styles
-    const style = document.createElement("style");
-    style.textContent = `
-      #dify-chatbot-bubble-button {
-        background-color: #5A67BA !important;
-      }
-      #dify-chatbot-bubble-window {
-        width: 24rem !important;
-        height: 40rem !important;
-      }
-    `;
-    document.head.appendChild(style);
+    // Check if style already exists to avoid duplicates
+    let existingStyle = document.getElementById("dify-chatbot-style");
+    if (!existingStyle) {
+      // Add custom styles
+      const style = document.createElement("style");
+      style.id = "dify-chatbot-style";
+      style.textContent = `
+        #dify-chatbot-bubble-button {
+          background-color: #5A67BA !important;
+        }
+        #dify-chatbot-bubble-window {
+          width: 24rem !important;
+          height: 40rem !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
 
-    // Cleanup function
-    return () => {
-      // Remove script and style on component unmount
-      const existingScript = document.getElementById("fHdXhfYjGoyhj4er");
-      if (existingScript) {
-        document.body.removeChild(existingScript);
-      }
-      if (style.parentNode) {
-        document.head.removeChild(style);
+    // Function to show/hide chatbot based on route
+    const toggleChatbotVisibility = () => {
+      const chatbotButton = document.getElementById(
+        "dify-chatbot-bubble-button"
+      );
+      const chatbotWindow = document.getElementById(
+        "dify-chatbot-bubble-window"
+      );
+
+      if (location.pathname === "/dashboard") {
+        // Show chatbot on dashboard
+        if (chatbotButton) {
+          chatbotButton.style.display = "block";
+        }
+        // Don't automatically show the window - let user click to open
+        if (chatbotWindow) {
+          chatbotWindow.style.display = "none";
+        }
+      } else {
+        // Hide chatbot on other routes and close any open chat
+        if (chatbotButton) {
+          chatbotButton.style.display = "none";
+        }
+        if (chatbotWindow) {
+          chatbotWindow.style.display = "none";
+        }
       }
     };
-  }, []);
+
+    // Initial call to set visibility
+    const checkAndToggle = () => {
+      toggleChatbotVisibility();
+      // If elements don't exist yet, try again after a short delay
+      const chatbotButton = document.getElementById(
+        "dify-chatbot-bubble-button"
+      );
+      if (!chatbotButton && location.pathname === "/dashboard") {
+        setTimeout(checkAndToggle, 100);
+      }
+    };
+
+    // Call immediately and set up interval for elements that load asynchronously
+    setTimeout(checkAndToggle, 100);
+
+    // Cleanup function - only hide, don't remove
+    return () => {
+      const chatbotButton = document.getElementById(
+        "dify-chatbot-bubble-button"
+      );
+      const chatbotWindow = document.getElementById(
+        "dify-chatbot-bubble-window"
+      );
+
+      if (chatbotButton) {
+        chatbotButton.style.display = "none";
+      }
+      if (chatbotWindow) {
+        chatbotWindow.style.display = "none";
+      }
+    };
+  }, [location.pathname]); // Re-run when route changes
+
+  // Close chatbot window when switching tabs within dashboard
+  useEffect(() => {
+    if (location.pathname === "/dashboard") {
+      const chatbotWindow = document.getElementById(
+        "dify-chatbot-bubble-window"
+      );
+      if (chatbotWindow) {
+        chatbotWindow.style.display = "none";
+      }
+    }
+  }, [activeTab]); // Close chatbot when tab changes
 
   // Get selected framework from global state
   const selectedFramework = window.selectedFramework || "ESG";
