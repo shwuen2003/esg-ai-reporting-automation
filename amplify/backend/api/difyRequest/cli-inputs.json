@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/generateReport": {
+      "name": "/generateReport",
+      "lambdaFunction": "generateReport",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}

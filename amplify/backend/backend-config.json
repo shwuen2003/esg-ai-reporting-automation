@@ -1,1 +1,43 @@
-{}
+{
+  "api": {
+    "difyRequest": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "generateReport"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "function": {
+    "generateReport": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_generateReport_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "generateReport"
+        }
+      ]
+    },
+    "AMPLIFY_function_generateReport_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "generateReport"
+        }
+      ]
+    }
+  }
+}

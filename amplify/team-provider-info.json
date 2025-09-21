@@ -10,6 +10,17 @@
       "StackName": "amplify-esgkiwibird-dev-cb2be",
       "StackId": "arn:aws:cloudformation:ap-southeast-1:699041963208:stack/amplify-esgkiwibird-dev-cb2be/3defc1e0-93d7-11f0-af04-06f979aea9a3",
       "AmplifyAppId": "d1ee5mpvme6d26"
+    },
+    "categories": {
+      "function": {
+        "generateReport": {
+          "deploymentBucketName": "amplify-esgkiwibird-dev-cb2be-deployment",
+          "s3Key": "amplify-builds/generateReport-71567655573676687067-build.zip"
+        }
+      },
+      "api": {
+        "difyRequest": {}
+      }
     }
   }
 }
