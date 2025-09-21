@@ -42,8 +42,9 @@ Deployment pattern:
 - API Gateway + Lambda used for backend endpoints (report generation orchestration)
 - Long-running or heavy workloads optionally handled on EC2 behind an ELB
 - Dify orchestrates AI workflows; Bedrock can be used where enterprise AWS model hosting is required
+
 ![High Level Architecture](img/highlevelarc.png)
-![AWS Architecture](img/image.png)
+![AWS Architecture](img/arc.png)
 
 ---
 ## Available Scripts
