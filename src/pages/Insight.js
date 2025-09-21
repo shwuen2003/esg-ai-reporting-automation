@@ -6,21 +6,22 @@ import {
   EyeOutlined,
   ArrowLeftOutlined,
   FilePdfOutlined,
+  BulbOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
-import { useReport } from "../contexts/ReportContext";
+import { useInsight } from "../contexts/InsightContext";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "highlight.js/styles/github.css"; // Add syntax highlighting styles
 
 const { Title, Text } = Typography;
 
-const Report = () => {
+const Insight = () => {
   const navigate = useNavigate();
-  const { reportData, loading, error } = useReport();
+  const { insightData, loading, error } = useInsight();
   const reportRef = useRef(null);
 
   // Loading state
@@ -38,7 +39,7 @@ const Report = () => {
       >
         <Spin size="large" />
         <Text style={{ color: "#666", fontSize: "16px" }}>
-          Generating your ESG report...
+          Generating your ESG insights...
         </Text>
       </div>
     );
@@ -51,7 +52,7 @@ const Report = () => {
         style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 24px" }}
       >
         <Alert
-          message="Report Generation Failed"
+          message="Insight Generation Failed"
           description={error}
           type="error"
           showIcon
@@ -67,8 +68,8 @@ const Report = () => {
     );
   }
 
-  // No report data
-  if (!reportData) {
+  // No insight data
+  if (!insightData) {
     return (
       <div
         style={{
@@ -83,10 +84,10 @@ const Report = () => {
         <FileTextOutlined style={{ fontSize: "64px", color: "#d9d9d9" }} />
         <div style={{ textAlign: "center" }}>
           <Title level={3} style={{ color: "#666", marginBottom: "8px" }}>
-            No Report Available
+            No Insights Available
           </Title>
           <Text style={{ color: "#999", fontSize: "16px" }}>
-            Please generate a report first by uploading documents
+            Please generate insights first by uploading documents
           </Text>
         </div>
         <Button
@@ -103,9 +104,9 @@ const Report = () => {
 
   const downloadReport = () => {
     const element = document.createElement("a");
-    const file = new Blob([reportData.content], { type: "text/markdown" });
+    const file = new Blob([insightData.content], { type: "text/markdown" });
     element.href = URL.createObjectURL(file);
-    element.download = `ESG_Report_${reportData.framework}_${
+    element.download = `ESG_Insights_${insightData.framework}_${
       new Date().toISOString().split("T")[0]
     }.md`;
     document.body.appendChild(element);
@@ -163,7 +164,7 @@ const Report = () => {
 
       // Save the PDF
       pdf.save(
-        `ESG_Report_${reportData.framework}_${
+        `ESG_Insights_${insightData.framework}_${
           new Date().toISOString().split("T")[0]
         }.pdf`
       );
@@ -222,18 +223,18 @@ const Report = () => {
               Back to Dashboard
             </Button>
             <div>
-              <Tag color="blue">{getFrameworkName(reportData.framework)}</Tag>
+              <Tag color="purple">
+                {getFrameworkName(insightData.framework)}
+              </Tag>
               <Tag color="green">
-                {reportData.files?.length || 0} Files Processed
+                {insightData.files?.length || 0} Files Processed
               </Tag>
             </div>
           </div>
 
           <Title level={2} style={{ color: "#2c3e50", marginBottom: "8px" }}>
-            <FileTextOutlined
-              style={{ marginRight: "12px", color: "#5A67BA" }}
-            />
-            ESG Compliance Report
+            <BulbOutlined style={{ marginRight: "12px", color: "#5A67BA" }} />
+            ESG Insights & Analysis
           </Title>
 
           <div
@@ -245,7 +246,7 @@ const Report = () => {
           >
             <Text style={{ color: "#666", fontSize: "16px" }}>
               Generated on{" "}
-              {new Date(reportData.timestamp).toLocaleDateString("en-US", {
+              {new Date(insightData.timestamp).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
@@ -429,7 +430,7 @@ const Report = () => {
                 ),
               }}
             >
-              {reportData.content}
+              {insightData.content}
             </ReactMarkdown>
           </div>
         </Card>
@@ -444,11 +445,11 @@ const Report = () => {
           }}
         >
           <Text style={{ color: "#666", fontSize: "14px" }}>
-            This report was automatically generated using AI analysis of your
-            uploaded documents. Framework:{" "}
-            {getFrameworkName(reportData.framework)} | Files processed:{" "}
-            {reportData.files?.length || 0} | Report ID:{" "}
-            {reportData.workflowData?.data?.id || "N/A"}
+            This insight report was automatically generated using AI analysis of
+            your uploaded documents. Framework:{" "}
+            {getFrameworkName(insightData.framework)} | Files processed:{" "}
+            {insightData.files?.length || 0} | Insight ID:{" "}
+            {insightData.workflowData?.data?.id || "N/A"}
           </Text>
         </Card>
       </div>
@@ -456,4 +457,4 @@ const Report = () => {
   );
 };
 
-export default Report;
+export default Insight;

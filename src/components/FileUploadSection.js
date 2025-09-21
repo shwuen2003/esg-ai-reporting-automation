@@ -6,6 +6,9 @@ import {
 } from "@ant-design/icons";
 import { Button, Upload, Typography, Space, message, Select } from "antd";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useReport } from "../contexts/ReportContext";
+import { useInsight } from "../contexts/InsightContext";
 
 const { Dragger } = Upload;
 const { Title, Text } = Typography;
@@ -14,6 +17,9 @@ const FileUploadSection = ({ onStartAnalysis }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [selectedFramework, setSelectedFramework] = useState(null);
+  const navigate = useNavigate();
+  const { updateReport, setReportError } = useReport();
+  const { updateInsight, setInsightError } = useInsight();
 
   // Initialize mock uploaded files in global scope for demo
   useEffect(() => {
@@ -38,6 +44,114 @@ const FileUploadSection = ({ onStartAnalysis }) => {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // Add this new function to call both APIs
+  const handleGenerateReport = async () => {
+    if (!selectedFramework) {
+      message.error("Please select a framework first");
+      return;
+    }
+
+    // Always redirect to analysis screen first
+    onStartAnalysis(selectedFramework);
+
+    // Call both APIs in parallel
+    try {
+      console.log("Starting report and insight generation...");
+      console.log("Selected framework:", selectedFramework);
+      console.log("Uploaded files:", uploadedFiles);
+
+      // Make both API calls simultaneously
+      const [reportResponse, insightResponse] = await Promise.all([
+        // First API call for report (existing bearer token)
+        fetch("https://43.217.163.179/v1/workflows/run", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer app-heFrrKvxN6jhKvhldeLt6G8r",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inputs: {},
+            response_mode: "blocking",
+            user: "zh-123",
+          }),
+        }),
+        // Second API call for insights (new bearer token)
+        fetch("https://43.217.163.179/v1/workflows/run", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer app-Nzsvi7P12rnQ3HzyMVtG6I3t",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inputs: {},
+            response_mode: "blocking",
+            user: "zh-123",
+          }),
+        }),
+      ]);
+
+      // Process report response
+      if (reportResponse.ok) {
+        const reportResult = await reportResponse.json();
+        console.log("Report API response:", reportResult);
+
+        if (
+          reportResult.data &&
+          reportResult.data.status === "succeeded" &&
+          reportResult.data.outputs &&
+          reportResult.data.outputs.esg_report
+        ) {
+          updateReport({
+            content: reportResult.data.outputs.esg_report,
+            framework: selectedFramework,
+            files: uploadedFiles,
+            timestamp: new Date().toISOString(),
+            workflowData: reportResult,
+          });
+          console.log("Report data stored successfully");
+        } else {
+          console.error("Report workflow failed:", reportResult.data?.error);
+          setReportError(reportResult.data?.error || "No ESG report generated");
+        }
+      } else {
+        throw new Error(`Report API error! status: ${reportResponse.status}`);
+      }
+
+      // Process insight response
+      if (insightResponse.ok) {
+        const insightResult = await insightResponse.json();
+        console.log("Insight API response:", insightResult);
+
+        if (
+          insightResult.data &&
+          insightResult.data.status === "succeeded" &&
+          insightResult.data.outputs &&
+          insightResult.data.outputs.esg_report
+        ) {
+          updateInsight({
+            content: insightResult.data.outputs.esg_report,
+            framework: selectedFramework,
+            files: uploadedFiles,
+            timestamp: new Date().toISOString(),
+            workflowData: insightResult,
+          });
+          console.log("Insight data stored successfully");
+        } else {
+          console.error("Insight workflow failed:", insightResult.data?.error);
+          setInsightError(
+            insightResult.data?.error || "No ESG insights generated"
+          );
+        }
+      } else {
+        throw new Error(`Insight API error! status: ${insightResponse.status}`);
+      }
+    } catch (error) {
+      console.error("Error calling APIs:", error);
+      setReportError(error.message);
+      setInsightError(error.message);
+    }
   };
 
   const uploadProps = {
@@ -290,7 +404,7 @@ const FileUploadSection = ({ onStartAnalysis }) => {
               type="primary"
               size="large"
               icon={<PlayCircleOutlined />}
-              onClick={() => onStartAnalysis(selectedFramework)}
+              onClick={handleGenerateReport}
               style={{
                 backgroundColor: "#5A67BA",
                 borderColor: "#5A67BA",

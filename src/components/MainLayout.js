@@ -8,6 +8,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   RobotOutlined,
+  BulbOutlined,
 } from "@ant-design/icons";
 import kiwiLogo from "../assets/kiwi bird.jpg";
 
@@ -25,16 +26,18 @@ const MainLayout = ({ children }) => {
     "/": "1",
     "/upload": "1",
     "/dashboard": "2",
-    "/report": "3",
-    "/chatbot": "4",
+    "/insight": "3",
+    "/report": "4",
+    "/chatbot": "5",
   };
 
   // Map menu keys to routes
   const keyToRouteMap = {
     1: "/upload",
     2: "/dashboard",
-    3: "/report",
-    4: "/chatbot",
+    3: "/insight",
+    4: "/report",
+    5: "/chatbot",
   };
 
   // Update selected key based on current route
@@ -182,8 +185,8 @@ const MainLayout = ({ children }) => {
               },
               {
                 key: "3",
-                icon: <FileTextOutlined />,
-                label: "Report",
+                icon: <BulbOutlined />,
+                label: "Insight",
                 style: {
                   color:
                     selectedKey === "3" ? "#5A6ACF" : "rgba(166, 171, 200, 1)",
@@ -198,8 +201,8 @@ const MainLayout = ({ children }) => {
               },
               {
                 key: "4",
-                icon: <RobotOutlined />,
-                label: "Chatbot",
+                icon: <FileTextOutlined />,
+                label: "Report",
                 style: {
                   color:
                     selectedKey === "4" ? "#5A6ACF" : "rgba(166, 171, 200, 1)",
@@ -210,6 +213,22 @@ const MainLayout = ({ children }) => {
                   margin: "4px 8px",
                   borderRadius: "6px",
                   fontWeight: selectedKey === "4" ? 600 : 400,
+                },
+              },
+              {
+                key: "5",
+                icon: <RobotOutlined />,
+                label: "Chatbot",
+                style: {
+                  color:
+                    selectedKey === "5" ? "#5A6ACF" : "rgba(166, 171, 200, 1)",
+                  backgroundColor:
+                    selectedKey === "5"
+                      ? "rgba(112, 127, 221, 0.1)"
+                      : "transparent",
+                  margin: "4px 8px",
+                  borderRadius: "6px",
+                  fontWeight: selectedKey === "5" ? 600 : 400,
                 },
               },
             ]}

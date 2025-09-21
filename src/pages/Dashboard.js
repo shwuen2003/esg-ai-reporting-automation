@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { Tabs, Typography, FloatButton, Modal } from "antd";
+import { useState, useEffect } from "react";
+import { Tabs, Typography } from "antd";
+import { useLocation } from "react-router-dom";
 import {
   HighlightOutlined,
   TeamOutlined,
   SafetyCertificateOutlined,
   ExperimentOutlined,
-  MessageOutlined,
 } from "@ant-design/icons";
 import KeyHighlights from "../components/KeyHighlights";
 import Environmental from "../components/Environmental";
@@ -16,7 +16,132 @@ const { Title } = Typography;
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("1");
-  const [chatbotOpen, setChatbotOpen] = useState(false);
+  const location = useLocation();
+
+  // Initialize Dify chatbot only when on dashboard route
+  useEffect(() => {
+    // Set up Dify chatbot configuration
+    window.difyChatbotConfig = {
+      token: "fHdXhfYjGoyhj4er",
+      baseUrl: "https://43.217.163.179",
+      inputs: {
+        // You can define the inputs from the Start node here
+        // key is the variable name
+        // e.g.
+        // name: "NAME"
+      },
+      systemVariables: {
+        // user_id: 'YOU CAN DEFINE USER ID HERE',
+        // conversation_id: 'YOU CAN DEFINE CONVERSATION ID HERE, IT MUST BE A VALID UUID',
+      },
+      userVariables: {
+        // avatar_url: 'YOU CAN DEFINE USER AVATAR URL HERE',
+        // name: 'YOU CAN DEFINE USER NAME HERE',
+      },
+    };
+
+    // Check if script already exists to avoid duplicates
+    let existingScript = document.getElementById("fHdXhfYjGoyhj4er");
+    if (!existingScript) {
+      // Add Dify chatbot script
+      const script = document.createElement("script");
+      script.src = "https://43.217.163.179/embed.min.js";
+      script.id = "fHdXhfYjGoyhj4er";
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+
+    // Check if style already exists to avoid duplicates
+    let existingStyle = document.getElementById("dify-chatbot-style");
+    if (!existingStyle) {
+      // Add custom styles
+      const style = document.createElement("style");
+      style.id = "dify-chatbot-style";
+      style.textContent = `
+        #dify-chatbot-bubble-button {
+          background-color: #5A67BA !important;
+        }
+        #dify-chatbot-bubble-window {
+          width: 24rem !important;
+          height: 40rem !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // Function to show/hide chatbot based on route
+    const toggleChatbotVisibility = () => {
+      const chatbotButton = document.getElementById(
+        "dify-chatbot-bubble-button"
+      );
+      const chatbotWindow = document.getElementById(
+        "dify-chatbot-bubble-window"
+      );
+
+      if (location.pathname === "/dashboard") {
+        // Show chatbot on dashboard
+        if (chatbotButton) {
+          chatbotButton.style.display = "block";
+        }
+        // Don't automatically show the window - let user click to open
+        if (chatbotWindow) {
+          chatbotWindow.style.display = "none";
+        }
+      } else {
+        // Hide chatbot on other routes and close any open chat
+        if (chatbotButton) {
+          chatbotButton.style.display = "none";
+        }
+        if (chatbotWindow) {
+          chatbotWindow.style.display = "none";
+        }
+      }
+    };
+
+    // Initial call to set visibility
+    const checkAndToggle = () => {
+      toggleChatbotVisibility();
+      // If elements don't exist yet, try again after a short delay
+      const chatbotButton = document.getElementById(
+        "dify-chatbot-bubble-button"
+      );
+      if (!chatbotButton && location.pathname === "/dashboard") {
+        setTimeout(checkAndToggle, 100);
+      }
+    };
+
+    // Call immediately and set up interval for elements that load asynchronously
+    setTimeout(checkAndToggle, 100);
+
+    // Cleanup function - only hide, don't remove
+    return () => {
+      const chatbotButton = document.getElementById(
+        "dify-chatbot-bubble-button"
+      );
+      const chatbotWindow = document.getElementById(
+        "dify-chatbot-bubble-window"
+      );
+
+      if (chatbotButton) {
+        chatbotButton.style.display = "none";
+      }
+      if (chatbotWindow) {
+        chatbotWindow.style.display = "none";
+      }
+    };
+  }, [location.pathname]); // Re-run when route changes
+
+  // Close chatbot window when switching tabs within dashboard
+  useEffect(() => {
+    if (location.pathname === "/dashboard") {
+      const chatbotWindow = document.getElementById(
+        "dify-chatbot-bubble-window"
+      );
+      if (chatbotWindow) {
+        chatbotWindow.style.display = "none";
+      }
+    }
+  }, [activeTab]); // Close chatbot when tab changes
 
   // Get selected framework from global state
   const selectedFramework = window.selectedFramework || "ESG";
@@ -113,45 +238,6 @@ function Dashboard() {
           boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
         }}
       />
-
-      {/* Floating Chatbot Button */}
-      <FloatButton
-        icon={<MessageOutlined />}
-        type="primary"
-        style={{
-          right: 24,
-          bottom: 24,
-          width: 60,
-          height: 60,
-          backgroundColor: "#5A67BA",
-          borderColor: "#5A67BA",
-        }}
-        onClick={() => setChatbotOpen(true)}
-        tooltip="Open AI Assistant"
-      />
-
-      {/* Chatbot Modal */}
-      <Modal
-        title="AI Assistant"
-        open={chatbotOpen}
-        onCancel={() => setChatbotOpen(false)}
-        footer={null}
-        width={800}
-        style={{ top: 20 }}
-        bodyStyle={{ padding: 0, height: "70vh" }}
-      >
-        <iframe
-          src="http://43.216.88.84/chatbot/fHdXhfYjGoyhj4er"
-          style={{
-            width: "100%",
-            height: "100%",
-            minHeight: "500px",
-            border: "none",
-          }}
-          frameBorder="0"
-          allow="microphone"
-        />
-      </Modal>
     </div>
   );
 }
