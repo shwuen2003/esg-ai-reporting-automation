@@ -8,6 +8,7 @@ import { Button, Upload, Typography, Space, message, Select } from "antd";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useReport } from "../contexts/ReportContext";
+import { useInsight } from "../contexts/InsightContext";
 
 const { Dragger } = Upload;
 const { Title, Text } = Typography;
@@ -18,6 +19,7 @@ const FileUploadSection = ({ onStartAnalysis }) => {
   const [selectedFramework, setSelectedFramework] = useState(null);
   const navigate = useNavigate();
   const { updateReport, setReportError } = useReport();
+  const { updateInsight, setInsightError } = useInsight();
 
   // Initialize mock uploaded files in global scope for demo
   useEffect(() => {
@@ -44,7 +46,7 @@ const FileUploadSection = ({ onStartAnalysis }) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
-  // Add this new function to call the Lambda function
+  // Add this new function to call both APIs
   const handleGenerateReport = async () => {
     if (!selectedFramework) {
       message.error("Please select a framework first");
@@ -54,57 +56,101 @@ const FileUploadSection = ({ onStartAnalysis }) => {
     // Always redirect to analysis screen first
     onStartAnalysis(selectedFramework);
 
-    // Then call the API in the background
+    // Call both APIs in parallel
     try {
-      console.log("Starting report generation...");
+      console.log("Starting report and insight generation...");
       console.log("Selected framework:", selectedFramework);
       console.log("Uploaded files:", uploadedFiles);
 
-      // Call your AWS Lambda function
-      const response = await fetch(
-        "https://d74uozipwh.execute-api.ap-southeast-1.amazonaws.com/dev/generateReport",
-        {
+      // Make both API calls simultaneously
+      const [reportResponse, insightResponse] = await Promise.all([
+        // First API call for report (existing bearer token)
+        fetch("https://43.217.163.179/v1/workflows/run", {
           method: "POST",
           headers: {
+            Authorization: "Bearer app-heFrrKvxN6jhKvhldeLt6G8r",
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            inputs: {},
+            response_mode: "blocking",
+            user: "zh-123",
+          }),
+        }),
+        // Second API call for insights (new bearer token)
+        fetch("https://43.217.163.179/v1/workflows/run", {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer app-Nzsvi7P12rnQ3HzyMVtG6I3t",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            inputs: {},
+            response_mode: "blocking",
+            user: "zh-123",
+          }),
+        }),
+      ]);
+
+      // Process report response
+      if (reportResponse.ok) {
+        const reportResult = await reportResponse.json();
+        console.log("Report API response:", reportResult);
+
+        if (
+          reportResult.data &&
+          reportResult.data.status === "succeeded" &&
+          reportResult.data.outputs &&
+          reportResult.data.outputs.esg_report
+        ) {
+          updateReport({
+            content: reportResult.data.outputs.esg_report,
             framework: selectedFramework,
             files: uploadedFiles,
             timestamp: new Date().toISOString(),
-          }),
+            workflowData: reportResult,
+          });
+          console.log("Report data stored successfully");
+        } else {
+          console.error("Report workflow failed:", reportResult.data?.error);
+          setReportError(reportResult.data?.error || "No ESG report generated");
         }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      } else {
+        throw new Error(`Report API error! status: ${reportResponse.status}`);
       }
 
-      const result = await response.json();
-      console.log("Lambda response:", result);
+      // Process insight response
+      if (insightResponse.ok) {
+        const insightResult = await insightResponse.json();
+        console.log("Insight API response:", insightResult);
 
-      // Check if the workflow was successful
-      if (result.success && result.workflowStatus === "succeeded") {
-        // Store the report data in context
-        updateReport({
-          content: result.esgReport, // The markdown content
-          framework: selectedFramework,
-          files: uploadedFiles,
-          timestamp: new Date().toISOString(),
-          workflowData: result.fullResponse,
-        });
-
-        console.log("Report data stored successfully");
+        if (
+          insightResult.data &&
+          insightResult.data.status === "succeeded" &&
+          insightResult.data.outputs &&
+          insightResult.data.outputs.esg_report
+        ) {
+          updateInsight({
+            content: insightResult.data.outputs.esg_report,
+            framework: selectedFramework,
+            files: uploadedFiles,
+            timestamp: new Date().toISOString(),
+            workflowData: insightResult,
+          });
+          console.log("Insight data stored successfully");
+        } else {
+          console.error("Insight workflow failed:", insightResult.data?.error);
+          setInsightError(
+            insightResult.data?.error || "No ESG insights generated"
+          );
+        }
       } else {
-        console.error(
-          "Workflow failed:",
-          result.workflowError || "Unknown error"
-        );
-        setReportError(result.workflowError || "Workflow failed");
+        throw new Error(`Insight API error! status: ${insightResponse.status}`);
       }
     } catch (error) {
-      console.error("Error calling Lambda function:", error);
+      console.error("Error calling APIs:", error);
       setReportError(error.message);
+      setInsightError(error.message);
     }
   };
 
