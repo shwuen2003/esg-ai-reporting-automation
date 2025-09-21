@@ -44,7 +44,13 @@ Deployment pattern:
 - Dify orchestrates AI workflows; Bedrock can be used where enterprise AWS model hosting is required
 
 ![High Level Architecture](img/highlevelarc.png)
+
+Figure: High-Level Architecture — illustrates the end-to-end system: user uploads via the Amplify-hosted frontend, document processing and orchestration through API Gateway and Lambda, AI workflows managed by Dify (or Amazon Bedrock), and optional EC2 + ELB for heavy processing and model hosting.
+
 ![AWS Architecture](img/arc.png)
+
+Figure: AWS Deployment Architecture — shows the AWS resource layout and network boundaries, including Amplify hosting, API Gateway, Lambda functions, EC2 instances behind an ELB with Elastic IPs, and integrations to Dify/Bedrock for AI inference and workflow orchestration.
+
 
 ---
 ## Available Scripts
@@ -99,23 +105,6 @@ In the project directory, you can run:
 
 5. **Download Report**  
    Reports can be downloaded either as Markdown or PDF from the report page ([Report](src/pages/Report.js)).
-
----
-## Amplify & Backend Setup
-
-AWS Amplify is used for backend operations. Key configuration files include:
-- [amplify/cli.json](amplify/cli.json)
-- [amplify/team-provider-info.json](amplify/team-provider-info.json)
-- [amplify/backend/function/generateReport/generateReport-cloudformation-template.json](amplify/backend/function/generateReport/generateReport-cloudformation-template.json)
-- [amplify/backend/api/difyRequest/cli-inputs.json](amplify/backend/api/difyRequest/cli-inputs.json)
-
----
-## Development Container
-
-This workspace runs inside a development container based on **Ubuntu 24.04.2 LTS** with essential tools available such as `git`, `docker`, and others. To open a webpage in the host’s default browser, use:
-```sh
-$BROWSER <url>
-```
 
 ---
 ## Contributing
