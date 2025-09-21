@@ -79,8 +79,8 @@
           ]
         },
         "Runtime": "nodejs22.x",
-        "Layers": [],
-        "Timeout": 25
+  "Layers": [],
+  "Timeout": 600000
       }
     },
     "LambdaExecutionRole": {

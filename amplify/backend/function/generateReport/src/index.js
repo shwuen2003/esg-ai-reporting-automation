@@ -6,8 +6,10 @@ exports.handler = async (event) => {
 
   try {
     // Make the API call to the workflow endpoint
-    const response = await fetch("http://43.216.88.84/v1/workflows/run", {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Disable SSL verification (not recommended for production)
+    const response = await fetch("https://43.217.163.179/v1/workflows/run", {
       method: "POST",
+      timeout: 600000, // 10 minutes timeout
       headers: {
         Authorization: "Bearer app-Nzsvi7P12rnQ3HzyMVtG6I3t",
         "Content-Type": "application/json",
@@ -20,6 +22,8 @@ exports.handler = async (event) => {
     });
 
     const data = await response.json();
+    const esg_report = data.get("data").get("outputs").get("esg_report");
+    console.log("Workflow response data:", data);
 
     return {
       statusCode: 200,
@@ -28,9 +32,10 @@ exports.handler = async (event) => {
         "Access-Control-Allow-Headers": "*",
       },
       body: JSON.stringify({
-        message: "Workflow executed successfully",
-        data: data,
+        esg_report: esg_report,
+        
       }),
+      
     };
   } catch (error) {
     console.error("Error calling workflow:", error);

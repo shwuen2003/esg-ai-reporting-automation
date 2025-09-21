@@ -15,7 +15,7 @@
       "function": {
         "generateReport": {
           "deploymentBucketName": "amplify-esgkiwibird-dev-cb2be-deployment",
-          "s3Key": "amplify-builds/generateReport-71567655573676687067-build.zip"
+          "s3Key": "amplify-builds/generateReport-55596558585939417431-build.zip"
         }
       },
       "api": {

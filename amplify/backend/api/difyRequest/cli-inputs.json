@@ -4,6 +4,7 @@
     "/generateReport": {
       "name": "/generateReport",
       "lambdaFunction": "generateReport",
+      "timeout": 600000,
       "permissions": {
         "setting": "open"
       }
