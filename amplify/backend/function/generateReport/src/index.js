@@ -32,7 +32,7 @@ exports.handler = async (event) => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Disable SSL verification (not recommended for production)
     const response = await fetch("https://43.217.163.179/v1/workflows/run", {
       method: "POST",
-      timeout: 600000, // 10 minutes timeout
+      timeout: 900, // 10 minutes timeout
       headers: {
         Authorization: "Bearer app-Nzsvi7P12rnQ3HzyMVtG6I3t",
         "Content-Type": "application/json",
